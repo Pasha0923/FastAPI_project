@@ -3,3 +3,9 @@ from sqlalchemy.orm import DeclarativeBase
 
 class Base(DeclarativeBase):
     pass
+
+
+# {
+#   "email": "test@example.com",
+#   "password": "password123"
+# }
