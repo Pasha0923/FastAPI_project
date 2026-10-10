@@ -1,8 +1,8 @@
 from schemas.auth import UserCreate
 from models.user import User
 from repository.user import UserRepository
-from core.security import hash_password, verify_password , create_access_token , create_refresh_token
-
+from core.security import hash_password, verify_password , create_access_token , create_refresh_token , decode_refresh_token
+import jwt
 
 class UserAlreadyExistsError(Exception):
     pass
@@ -11,6 +11,8 @@ class UserAlreadyExistsError(Exception):
 class InvalidCredentialsError(Exception):
     pass
 
+class InvalidRefreshTokenError(Exception):
+    pass
 
 class AuthService:
     def __init__(self, user_repository: UserRepository):
@@ -44,3 +46,20 @@ class AuthService:
         access_token = create_access_token(token_data)
         refresh_token = create_refresh_token(token_data)
         return user , access_token , refresh_token
+
+    async def refresh_tokens(self, refresh_token: str) -> tuple[str, str]:
+        try:
+            payload = decode_refresh_token(refresh_token)
+            user_id = int(payload["sub"])
+        except (jwt.InvalidTokenError, ValueError, KeyError, TypeError):
+            raise InvalidRefreshTokenError("Invalid refresh token")
+
+        user = await self.user_repository.get_by_id(user_id)
+
+        if user is None:
+            raise InvalidRefreshTokenError("User not found")
+
+        token_data = {"sub": str(user.id)}
+        new_access_token = create_access_token(token_data)
+
+        return new_access_token, refresh_token
