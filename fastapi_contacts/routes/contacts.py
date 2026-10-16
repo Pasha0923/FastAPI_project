@@ -53,3 +53,7 @@ async def delete_contact(contact_id: int, current_user: User = Depends(get_curre
     if not deleted:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contact not found")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+@router.get("/upcoming-birthdays", response_model=list[ContactResponse])
+async def get_upcoming_birthdays(current_user: User = Depends(get_current_user), repository: ContactRepository = Depends(get_contact_repository)):
+    return await repository.get_upcoming_birthdays(user_id=current_user.id, days=7)
