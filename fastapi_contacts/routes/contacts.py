@@ -21,10 +21,13 @@ async def create_contact(contact_data: ContactCreate, current_user: User = Depen
     contact = Contact(**contact_data.model_dump(), user_id=current_user.id)
     return await repository.create(contact)
 
-@router.get("/", response_model=list[ContactResponse])
-async def get_contacts(current_user: User = Depends(get_current_user), repository: ContactRepository = Depends(get_contact_repository)):
-    return await repository.get_all_by_user(current_user.id)
+# @router.get("/", response_model=list[ContactResponse])
+# async def get_contacts(current_user: User = Depends(get_current_user), repository: ContactRepository = Depends(get_contact_repository)):
+#     return await repository.get_all_by_user(current_user.id)
 
+@router.get("/", response_model=list[ContactResponse])
+async def get_contacts(first_name: str | None = None, last_name: str | None = None, email: str | None = None, current_user: User = Depends(get_current_user), repository: ContactRepository = Depends(get_contact_repository)):
+    return await repository.get_all_by_user(user_id=current_user.id, first_name=first_name, last_name=last_name, email=email)
 
 @router.get("/{contact_id}", response_model=ContactResponse)
 async def get_contact(contact_id: int, current_user: User = Depends(get_current_user), repository: ContactRepository = Depends(get_contact_repository)):
